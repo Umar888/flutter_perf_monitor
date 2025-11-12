@@ -4,41 +4,41 @@ import 'models/fps_data.dart';
 import 'models/memory_data.dart';
 import 'models/performance_metrics.dart';
 
-/// A widget that displays real-time performance metrics.
+/// A widget that displays real-time performance metrics (FPS, memory, CPU).
 ///
-/// This widget shows FPS, memory usage, and other performance indicators
-/// in a visually appealing overlay that can be positioned anywhere in your app.
+/// Can be displayed as compact chips or expanded detailed view.
 class PerfMonitorWidget extends StatefulWidget {
-  /// The position of the monitor widget
+  /// Widget alignment on screen.
   final Alignment alignment;
 
-  /// Whether to show the FPS display
+  /// Show FPS metric.
   final bool showFPS;
 
-  /// Whether to show the memory usage display
+  /// Show memory metric.
   final bool showMemory;
 
-  /// Whether to show the CPU usage display
+  /// Show CPU metric.
   final bool showCPU;
 
-  /// The background color of the monitor
+  /// Background color of the monitor.
   final Color backgroundColor;
 
-  /// The text color of the monitor
+  /// Text color for metrics.
   final Color textColor;
 
-  /// The border radius of the monitor
+  /// Border radius of the monitor.
   final double borderRadius;
 
-  /// The padding of the monitor
+  /// Padding inside the monitor.
   final EdgeInsets padding;
 
-  /// Expanded by default
+  /// Expanded by default or compact.
   final bool isExpanded;
-  
-  /// Expanded by default
+
+  /// Optional title shown in expanded view.
   final String? title;
 
+  /// Localization strings for metrics.
   final String current;
   final String average;
   final String min;
@@ -51,21 +51,11 @@ class PerfMonitorWidget extends StatefulWidget {
   final String cpu;
   final String frameTime;
   final String available;
-  
-  /// Creates a new PerfMonitorWidget instance.
-  ///
-  /// [key] - The widget key
-  /// [alignment] - The position of the monitor widget
-  /// [showFPS] - Whether to show the FPS display
-  /// [showMemory] - Whether to show the memory usage display
-  /// [showCPU] - Whether to show the CPU usage display
-  /// [backgroundColor] - The background color of the monitor
-  /// [textColor] - The text color of the monitor
-  /// [borderRadius] - The border radius of the monitor
-  /// [padding] - The padding of the monitor
+
+  /// Creates a new PerfMonitorWidget.
   const PerfMonitorWidget({
     super.key,
-     this.current = "Current",
+    this.current = "Current",
     this.average = "Average",
     this.min = "Min",
     this.max = "Max",
@@ -97,7 +87,9 @@ class _PerfMonitorWidgetState extends State<PerfMonitorWidget> {
   PerformanceMetrics? _currentMetrics;
   FPSData? _currentFPS;
   MemoryData? _currentMemory;
-  bool _isExpanded = false;
+
+  /// Controls expanded/collapsed state.
+  late bool _isExpanded;
 
   @override
   void initState() {
@@ -112,46 +104,30 @@ class _PerfMonitorWidgetState extends State<PerfMonitorWidget> {
     super.dispose();
   }
 
+  /// Subscribe to FlutterPerfMonitor streams.
   void _startListening() {
     FlutterPerfMonitor.instance.metricsStream.listen((metrics) {
-      if (mounted) {
-        setState(() {
-          _currentMetrics = metrics;
-        });
-      }
+      if (mounted) setState(() => _currentMetrics = metrics);
     });
 
     FlutterPerfMonitor.instance.fpsStream.listen((fps) {
-      if (mounted) {
-        setState(() {
-          _currentFPS = fps;
-        });
-      }
+      if (mounted) setState(() => _currentFPS = fps);
     });
 
     FlutterPerfMonitor.instance.memoryStream.listen((memory) {
-      if (mounted) {
-        setState(() {
-          _currentMemory = memory;
-        });
-      }
+      if (mounted) setState(() => _currentMemory = memory);
     });
   }
 
-  void _stopListening() {
-    // Streams are automatically managed by the FlutterPerfMonitor
-  }
+  /// Streams are managed by FlutterPerfMonitor; nothing to dispose.
+  void _stopListening() {}
 
   @override
   Widget build(BuildContext context) {
     return Align(
       alignment: widget.alignment,
       child: GestureDetector(
-        onTap: () {
-          setState(() {
-            _isExpanded = !_isExpanded;
-          });
-        },
+        onTap: () => setState(() => _isExpanded = !_isExpanded),
         child: Container(
           margin: const EdgeInsets.all(16.0),
           padding: widget.padding,
@@ -159,7 +135,7 @@ class _PerfMonitorWidgetState extends State<PerfMonitorWidget> {
             color: widget.backgroundColor,
             borderRadius: BorderRadius.circular(widget.borderRadius),
             border: Border.all(
-              color: widget.textColor.withValues(alpha: 0.3),
+              color: widget.textColor.withOpacity(0.3),
               width: 1.0,
             ),
           ),
@@ -169,6 +145,7 @@ class _PerfMonitorWidgetState extends State<PerfMonitorWidget> {
     );
   }
 
+  /// Compact view shows only chips for enabled metrics.
   Widget _buildCompactView() {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -176,19 +153,14 @@ class _PerfMonitorWidgetState extends State<PerfMonitorWidget> {
         if (widget.showFPS && _currentFPS != null)
           _buildMetricChip(widget.fps, _currentFPS!.currentFPS.toStringAsFixed(1)),
         if (widget.showMemory && _currentMemory != null)
-          _buildMetricChip(
-            widget.mem,
-            '${_currentMemory!.currentUsageMB.toStringAsFixed(1)}MB',
-          ),
+          _buildMetricChip(widget.mem, '${_currentMemory!.currentUsageMB.toStringAsFixed(1)}MB'),
         if (widget.showCPU && _currentMetrics != null)
-          _buildMetricChip(
-            widget.cpu,
-            '${_currentMetrics!.cpuUsage.toStringAsFixed(1)}%',
-          ),
+          _buildMetricChip(widget.cpu, '${_currentMetrics!.cpuUsage.toStringAsFixed(1)}%'),
       ],
     );
   }
 
+  /// Expanded view shows detailed metrics.
   Widget _buildExpandedView() {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -202,6 +174,7 @@ class _PerfMonitorWidgetState extends State<PerfMonitorWidget> {
     );
   }
 
+  /// Header with optional title and expand/collapse icon.
   Widget _buildHeader() {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -217,21 +190,19 @@ class _PerfMonitorWidgetState extends State<PerfMonitorWidget> {
           ),
         ),
         const Spacer(),
-        Icon(
-          _isExpanded ? Icons.expand_less : Icons.expand_more,
-          color: widget.textColor,
-          size: 16.0,
-        ),
+        Icon(_isExpanded ? Icons.expand_less : Icons.expand_more,
+            color: widget.textColor, size: 16.0),
       ],
     );
   }
 
+  /// Chip for compact view metrics.
   Widget _buildMetricChip(String label, String value) {
     return Container(
       margin: const EdgeInsets.only(right: 4.0),
       padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
       decoration: BoxDecoration(
-        color: widget.textColor.withValues(alpha: 0.2),
+        color: widget.textColor.withOpacity(0.2),
         borderRadius: BorderRadius.circular(4.0),
       ),
       child: Text(
@@ -245,9 +216,8 @@ class _PerfMonitorWidgetState extends State<PerfMonitorWidget> {
     );
   }
 
+  /// Detailed FPS section.
   Widget _buildFPSDetails() {
-    if (_currentFPS == null) return const SizedBox.shrink();
-
     return _buildDetailSection(widget.fps, [
       _buildDetailRow(widget.current, _currentFPS!.currentFPS.toStringAsFixed(1)),
       _buildDetailRow(widget.average, _currentFPS!.averageFPS.toStringAsFixed(1)),
@@ -256,68 +226,38 @@ class _PerfMonitorWidgetState extends State<PerfMonitorWidget> {
     ]);
   }
 
+  /// Detailed Memory section.
   Widget _buildMemoryDetails() {
-    if (_currentMemory == null) return const SizedBox.shrink();
-
     final rows = <Widget>[
-      _buildDetailRow(
-        widget.current,
-        '${_currentMemory!.currentUsageMB.toStringAsFixed(1)}MB',
-      ),
-      _buildDetailRow(
-        widget.peak,
-        '${_currentMemory!.peakUsageMB.toStringAsFixed(1)}MB',
-      ),
+      _buildDetailRow(widget.current, '${_currentMemory!.currentUsageMB.toStringAsFixed(1)}MB'),
+      _buildDetailRow(widget.peak, '${_currentMemory!.peakUsageMB.toStringAsFixed(1)}MB'),
     ];
 
-    // Only show Available and Usage if we have total memory data
     if (_currentMemory!.totalMemory > 0) {
-      rows.add(
-        _buildDetailRow(
-          widget.available,
-          '${_currentMemory!.availableMemoryMB.toStringAsFixed(1)}MB',
-        ),
-      );
-      rows.add(
-        _buildDetailRow(
-          widget.usage,
-          '${_currentMemory!.usagePercentage.toStringAsFixed(1)}%',
-        ),
-      );
+      rows.add(_buildDetailRow(widget.available, '${_currentMemory!.availableMemoryMB.toStringAsFixed(1)}MB'));
+      rows.add(_buildDetailRow(widget.usage, '${_currentMemory!.usagePercentage.toStringAsFixed(1)}%'));
     }
 
     return _buildDetailSection(widget.memory, rows);
   }
 
+  /// Detailed CPU section.
   Widget _buildCPUDetails() {
-    if (_currentMetrics == null) return const SizedBox.shrink();
-
     return _buildDetailSection(widget.cpu, [
-      _buildDetailRow(
-        widget.usage,
-        '${_currentMetrics!.cpuUsage.toStringAsFixed(1)}%',
-      ),
-      _buildDetailRow(
-        widget.frameTime,
-        '${_currentMetrics!.frameTime.toStringAsFixed(2)}ms',
-      ),
+      _buildDetailRow(widget.usage, '${_currentMetrics!.cpuUsage.toStringAsFixed(1)}%'),
+      _buildDetailRow(widget.frameTime, '${_currentMetrics!.frameTime.toStringAsFixed(2)}ms'),
     ]);
   }
 
+  /// Section with title and list of metric rows.
   Widget _buildDetailSection(String title, List<Widget> children) {
     return Container(
       margin: const EdgeInsets.only(top: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: TextStyle(
-              color: widget.textColor,
-              fontSize: 11.0,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          Text(title,
+              style: TextStyle(color: widget.textColor, fontSize: 11.0, fontWeight: FontWeight.w600)),
           const SizedBox(height: 4.0),
           ...children,
         ],
@@ -325,6 +265,7 @@ class _PerfMonitorWidgetState extends State<PerfMonitorWidget> {
     );
   }
 
+  /// Single row with label and value.
   Widget _buildDetailRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 2.0),
@@ -335,20 +276,11 @@ class _PerfMonitorWidgetState extends State<PerfMonitorWidget> {
             width: 50.0,
             child: Text(
               label,
-              style: TextStyle(
-                color: widget.textColor.withValues(alpha: 0.8),
-                fontSize: 10.0,
-              ),
+              style: TextStyle(color: widget.textColor.withOpacity(0.8), fontSize: 10.0),
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              color: widget.textColor,
-              fontSize: 10.0,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+          Text(value,
+              style: TextStyle(color: widget.textColor, fontSize: 10.0, fontWeight: FontWeight.w500)),
         ],
       ),
     );
