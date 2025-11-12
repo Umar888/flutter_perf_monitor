@@ -33,6 +33,9 @@ class PerfMonitorWidget extends StatefulWidget {
   /// The padding of the monitor
   final EdgeInsets padding;
 
+  /// Exapanded by default
+  final bool isExpanded;
+  
   /// Creates a new PerfMonitorWidget instance.
   ///
   /// [key] - The widget key
@@ -48,6 +51,7 @@ class PerfMonitorWidget extends StatefulWidget {
     super.key,
     this.alignment = Alignment.topRight,
     this.showFPS = true,
+    this.isExpanded = false,
     this.showMemory = true,
     this.showCPU = true,
     this.backgroundColor = const Color(0x80000000),
@@ -69,6 +73,7 @@ class _PerfMonitorWidgetState extends State<PerfMonitorWidget> {
   @override
   void initState() {
     super.initState();
+    _isExpanded = widget.isExpanded;
     _startListening();
   }
 
