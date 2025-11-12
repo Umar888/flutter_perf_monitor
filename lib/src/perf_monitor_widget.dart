@@ -33,8 +33,24 @@ class PerfMonitorWidget extends StatefulWidget {
   /// The padding of the monitor
   final EdgeInsets padding;
 
-  /// Exapanded by default
+  /// Expanded by default
   final bool isExpanded;
+  
+  /// Expanded by default
+  final String? title;
+
+  final String current;
+  final String average;
+  final String min;
+  final String max;
+  final String peak;
+  final String usage;
+  final String memory;
+  final String fps;
+  final String mem;
+  final String cpu;
+  final String frameTime;
+  final String available;
   
   /// Creates a new PerfMonitorWidget instance.
   ///
@@ -49,7 +65,20 @@ class PerfMonitorWidget extends StatefulWidget {
   /// [padding] - The padding of the monitor
   const PerfMonitorWidget({
     super.key,
+     this.current = "Current",
+    this.average = "Average",
+    this.min = "Min",
+    this.max = "Max",
+    this.peak = "Peak",
+    this.usage = "Usage",
+    this.memory = "Memory",
+    this.available = "Available",
+    this.fps = "FPS",
+    this.mem = "MEM",
+    this.cpu = "CPU",
+    this.frameTime = "Frame Time",
     this.alignment = Alignment.topRight,
+    this.title,
     this.showFPS = true,
     this.isExpanded = false,
     this.showMemory = true,
@@ -145,15 +174,15 @@ class _PerfMonitorWidgetState extends State<PerfMonitorWidget> {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (widget.showFPS && _currentFPS != null)
-          _buildMetricChip('FPS', _currentFPS!.currentFPS.toStringAsFixed(1)),
+          _buildMetricChip(widget.fps, _currentFPS!.currentFPS.toStringAsFixed(1)),
         if (widget.showMemory && _currentMemory != null)
           _buildMetricChip(
-            'MEM',
+            widget.mem,
             '${_currentMemory!.currentUsageMB.toStringAsFixed(1)}MB',
           ),
         if (widget.showCPU && _currentMetrics != null)
           _buildMetricChip(
-            'CPU',
+            widget.cpu,
             '${_currentMetrics!.cpuUsage.toStringAsFixed(1)}%',
           ),
       ],
@@ -180,7 +209,7 @@ class _PerfMonitorWidgetState extends State<PerfMonitorWidget> {
         Icon(Icons.speed, color: widget.textColor, size: 16.0),
         const SizedBox(width: 4.0),
         Text(
-          'Performance Monitor',
+          widget.title ?? 'Performance Monitor',
           style: TextStyle(
             color: widget.textColor,
             fontSize: 12.0,
@@ -219,11 +248,11 @@ class _PerfMonitorWidgetState extends State<PerfMonitorWidget> {
   Widget _buildFPSDetails() {
     if (_currentFPS == null) return const SizedBox.shrink();
 
-    return _buildDetailSection('FPS', [
-      _buildDetailRow('Current', _currentFPS!.currentFPS.toStringAsFixed(1)),
-      _buildDetailRow('Average', _currentFPS!.averageFPS.toStringAsFixed(1)),
-      _buildDetailRow('Min', _currentFPS!.minFPS.toStringAsFixed(1)),
-      _buildDetailRow('Max', _currentFPS!.maxFPS.toStringAsFixed(1)),
+    return _buildDetailSection(widget.fps, [
+      _buildDetailRow(widget.current, _currentFPS!.currentFPS.toStringAsFixed(1)),
+      _buildDetailRow(widget.average, _currentFPS!.averageFPS.toStringAsFixed(1)),
+      _buildDetailRow(widget.min, _currentFPS!.minFPS.toStringAsFixed(1)),
+      _buildDetailRow(widget.max, _currentFPS!.maxFPS.toStringAsFixed(1)),
     ]);
   }
 
@@ -232,11 +261,11 @@ class _PerfMonitorWidgetState extends State<PerfMonitorWidget> {
 
     final rows = <Widget>[
       _buildDetailRow(
-        'Current',
+        widget.current,
         '${_currentMemory!.currentUsageMB.toStringAsFixed(1)}MB',
       ),
       _buildDetailRow(
-        'Peak',
+        widget.peak,
         '${_currentMemory!.peakUsageMB.toStringAsFixed(1)}MB',
       ),
     ];
@@ -245,31 +274,31 @@ class _PerfMonitorWidgetState extends State<PerfMonitorWidget> {
     if (_currentMemory!.totalMemory > 0) {
       rows.add(
         _buildDetailRow(
-          'Available',
+          widget.available,
           '${_currentMemory!.availableMemoryMB.toStringAsFixed(1)}MB',
         ),
       );
       rows.add(
         _buildDetailRow(
-          'Usage',
+          widget.usage,
           '${_currentMemory!.usagePercentage.toStringAsFixed(1)}%',
         ),
       );
     }
 
-    return _buildDetailSection('Memory', rows);
+    return _buildDetailSection(widget.memory, rows);
   }
 
   Widget _buildCPUDetails() {
     if (_currentMetrics == null) return const SizedBox.shrink();
 
-    return _buildDetailSection('CPU', [
+    return _buildDetailSection(widget.cpu, [
       _buildDetailRow(
-        'Usage',
+        widget.usage,
         '${_currentMetrics!.cpuUsage.toStringAsFixed(1)}%',
       ),
       _buildDetailRow(
-        'Frame Time',
+        widget.frameTime,
         '${_currentMetrics!.frameTime.toStringAsFixed(2)}ms',
       ),
     ]);
