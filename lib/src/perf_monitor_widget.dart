@@ -10,6 +10,7 @@ import 'models/performance_metrics.dart';
 class PerfMonitorWidget extends StatefulWidget {
   /// Widget alignment on screen.
   final Alignment alignment;
+  final double? margin;
 
   /// Show FPS metric.
   final bool showFPS;
@@ -69,6 +70,7 @@ class PerfMonitorWidget extends StatefulWidget {
     this.frameTime = "Frame Time",
     this.alignment = Alignment.topRight,
     this.title,
+    this.margin,
     this.showFPS = true,
     this.isExpanded = false,
     this.showMemory = true,
@@ -129,7 +131,7 @@ class _PerfMonitorWidgetState extends State<PerfMonitorWidget> {
       child: GestureDetector(
         onTap: () => setState(() => _isExpanded = !_isExpanded),
         child: Container(
-          margin: const EdgeInsets.all(16.0),
+          margin: EdgeInsets.all(widget.margin ?? 16.0),
           padding: widget.padding,
           decoration: BoxDecoration(
             color: widget.backgroundColor,
