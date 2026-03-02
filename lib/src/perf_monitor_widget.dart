@@ -23,6 +23,7 @@ class PerfMonitorWidget extends StatefulWidget {
 
   /// Background color of the monitor.
   final Color backgroundColor;
+  final Color? borderColor;
 
   /// Text color for metrics.
   final Color textColor;
@@ -70,6 +71,7 @@ class PerfMonitorWidget extends StatefulWidget {
     this.frameTime = "Frame Time",
     this.alignment = Alignment.topRight,
     this.title,
+    this.borderColor,
     this.margin,
     this.showFPS = true,
     this.isExpanded = false,
@@ -137,7 +139,7 @@ class _PerfMonitorWidgetState extends State<PerfMonitorWidget> {
             color: widget.backgroundColor,
             borderRadius: BorderRadius.circular(widget.borderRadius),
             border: Border.all(
-              color: widget.textColor.withOpacity(0.3),
+              color: widget.borderColor ?? Colors.transparent,
               width: 1.0,
             ),
           ),
